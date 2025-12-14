@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SleekScale - Dark Mode</title>
+    <title>SleekScale - Liquid Glass</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,21 +29,17 @@
                         sans: ['Inter', 'sans-serif'],
                     },
                     animation: {
-                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'blob': 'blob 10s infinite',
                         'float': 'float 6s ease-in-out infinite',
                     },
                     keyframes: {
-                        'gradient-x': {
-                            '0%, 100%': {
-                                'background-size': '200% 200%',
-                                'background-position': 'left center'
-                            },
-                            '50%': {
-                                'background-size': '200% 200%',
-                                'background-position': 'right center'
-                            },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
                         },
-                        'float': {
+                        float: {
                             '0%, 100%': { transform: 'translateY(0)' },
                             '50%': { transform: 'translateY(-10px)' },
                         }
@@ -55,27 +51,158 @@
 
     <style>
         body {
-            /* Dark Mode Gradient */
-            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #111827);
-            background-size: 400% 400%;
-            animation: gradient-x 15s ease infinite;
-            height: 100vh;
+            background-color: #000;
+            color: #fff;
             overflow-y: auto;
-            color: #f8fafc;
+            min-height: 100vh;
         }
 
+        /* Ambient Background Blobs */
+        .ambient-light {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+            background: #000;
+        }
+
+        .blob-1 {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.4) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: blob 20s infinite alternate;
+        }
+
+        .blob-2 {
+            position: absolute;
+            bottom: -10%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: blob 25s infinite alternate-reverse;
+        }
+
+        .blob-3 {
+            position: absolute;
+            top: 40%;
+            left: 40%;
+            width: 40vw;
+            height: 40vw;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.3) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            animation: blob 22s infinite alternate;
+        }
+
+        /* VisionOS Glass Material */
         .glass-panel {
-            background: rgba(30, 41, 59, 0.75); /* Slate 800 with opacity */
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle white border */
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            background: rgba(30, 30, 35, 0.6);
+            backdrop-filter: blur(50px) saturate(180%);
+            -webkit-backdrop-filter: blur(50px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1); /* Inner specular highlight */
         }
 
-        .drag-active {
-            border-color: #60a5fa !important; /* Blue 400 */
-            background-color: rgba(59, 130, 246, 0.1) !important;
-            transform: scale(1.02);
+        /* Liquid Inputs */
+        .liquid-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .liquid-input:focus {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.3);
+            outline: none;
+            box-shadow: 
+                0 0 0 4px rgba(255, 255, 255, 0.05),
+                inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Liquid Button */
+        .liquid-btn {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .liquid-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent);
+            border-radius: inherit;
+        }
+
+        .liquid-btn:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px -10px rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .liquid-primary {
+            background: #007AFF; /* Apple Blue */
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
+        }
+
+        .liquid-primary:hover {
+            background: #0066CC;
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.6);
+        }
+
+        /* Segmented Control */
+        .segmented-control {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 9999px;
+            padding: 4px;
+            display: inline-flex;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn {
+            position: relative;
+            z-index: 10;
+            transition: color 0.3s;
+        }
+
+        .tab-active {
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .tab-inactive {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .tab-inactive:hover {
+            color: rgba(255, 255, 255, 0.8);
         }
 
         /* Custom Range Slider */
@@ -89,67 +216,69 @@
             height: 20px;
             width: 20px;
             border-radius: 50%;
-            background: #60a5fa;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
             cursor: pointer;
             margin-top: -8px; 
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 4px;
             cursor: pointer;
-            background: #334155; /* Slate 700 */
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 2px;
         }
 
         .loader {
-            border: 3px solid #334155;
+            border: 3px solid rgba(255, 255, 255, 0.1);
             border-radius: 50%;
-            border-top: 3px solid #60a5fa;
-            width: 24px;
-            height: 24px;
-            -webkit-animation: spin 1s linear infinite; /* Safari */
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Drop Zone Styles */
+        .drop-zone {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
         }
-        
-        .tab-active {
-            background-color: #2563eb;
-            color: white;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        }
-        
-        .tab-inactive {
-            color: #94a3b8;
-        }
-        
-        .tab-inactive:hover {
-            color: white;
+        .drop-zone:hover, .drag-active {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.01);
         }
     </style>
 </head>
-<body class="flex items-center justify-center p-4 min-h-screen">
+<body class="flex items-center justify-center p-4">
 
-    <div class="glass-panel w-full max-w-xl rounded-3xl p-8 transition-all duration-300 relative overflow-hidden">
+    <!-- Ambient Background -->
+    <div class="ambient-light">
+        <div class="blob-1"></div>
+        <div class="blob-2"></div>
+        <div class="blob-3"></div>
+    </div>
+
+    <!-- Main Glass Container -->
+    <div class="glass-panel w-full max-w-xl rounded-[2.5rem] p-8 transition-all duration-300 relative overflow-hidden">
         
         <!-- Header -->
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold tracking-tight text-white">SleekScale</h1>
-            <p class="text-slate-400 mt-2 text-sm">All-in-one file utility.</p>
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-semibold tracking-tight text-white mb-2" style="text-shadow: 0 2px 10px rgba(0,0,0,0.3);">SleekScale</h1>
+            <p class="text-white/50 text-sm font-light">Advanced File Utility</p>
         </div>
 
         <!-- App Switcher Tabs -->
         <div class="flex justify-center mb-8">
-            <div class="bg-slate-900/50 p-1 rounded-xl flex border border-slate-700/50">
-                <button id="tab-resizer" class="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 tab-active">
+            <div class="segmented-control">
+                <button id="tab-resizer" class="tab-btn px-6 py-2 rounded-full text-sm font-medium tab-active transition-all">
                     Resize & Compress
                 </button>
-                <button id="tab-converter" class="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200 tab-inactive">
+                <button id="tab-converter" class="tab-btn px-6 py-2 rounded-full text-sm font-medium tab-inactive transition-all">
                     HEIC to JPG
                 </button>
             </div>
@@ -159,93 +288,102 @@
         <div id="app-resizer">
             <!-- Upload Step -->
             <div id="upload-step">
-                <div id="drop-zone" class="border-2 border-dashed border-slate-600 rounded-2xl p-10 text-center transition-all duration-300 cursor-pointer hover:border-blue-500 hover:bg-slate-800/50 group bg-slate-800/30">
+                <div id="drop-zone" class="drop-zone rounded-3xl p-12 text-center cursor-pointer group">
                     <input type="file" id="file-input" class="hidden" accept=".png,.jpg,.jpeg,.pdf">
                     
                     <div class="pointer-events-none">
-                        <div class="mb-4 text-slate-500 group-hover:text-blue-400 transition-colors duration-300">
-                            <i class="fa-solid fa-compress text-4xl animate-float"></i>
+                        <div class="mb-6 w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-white/80"></i>
                         </div>
-                        <p class="font-medium text-slate-200">Resize File</p>
-                        <p class="text-xs text-slate-400 mt-2">JPG, PNG, or PDF up to 20MB</p>
+                        <p class="font-medium text-white/90 text-lg">Tap to Upload</p>
+                        <p class="text-xs text-white/40 mt-2">JPG, PNG, or PDF up to 20MB</p>
                     </div>
                 </div>
             </div>
 
             <!-- Processing Step -->
             <div id="processing-step" class="hidden">
-                <div class="flex items-center p-4 bg-slate-800/50 rounded-xl mb-6 border border-slate-700">
-                    <div class="w-10 h-10 rounded-lg bg-slate-700 shadow-sm flex items-center justify-center text-slate-300 mr-4">
-                        <i id="file-icon" class="fa-regular fa-file-image"></i>
+                <!-- File Card -->
+                <div class="flex items-center p-4 bg-white/5 rounded-2xl mb-6 border border-white/10 backdrop-blur-md">
+                    <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white mr-4 shadow-inner">
+                        <i id="file-icon" class="fa-regular fa-file-image text-lg"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p id="filename-display" class="font-medium text-sm truncate text-slate-200">image.jpg</p>
-                        <p id="original-size-display" class="text-xs text-slate-400">2.4 MB</p>
+                        <p id="filename-display" class="font-medium text-sm truncate text-white/90">image.jpg</p>
+                        <p id="original-size-display" class="text-xs text-white/40">2.4 MB</p>
                     </div>
-                    <button id="remove-file-btn" class="text-slate-500 hover:text-red-400 transition-colors p-2">
+                    <button id="remove-file-btn" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-colors">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
-                <div class="space-y-6">
+                <div class="space-y-8">
                     <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <label class="text-sm font-semibold text-slate-300">Target File Size</label>
-                            <span id="target-size-display" class="text-sm font-bold text-blue-400 bg-blue-900/30 border border-blue-500/20 px-2 py-1 rounded">500 KB</span>
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="text-sm font-medium text-white/70">Target File Size</label>
+                            <span id="target-size-display" class="text-sm font-bold text-white bg-white/10 px-3 py-1 rounded-full border border-white/5">500 KB</span>
                         </div>
                         
                         <div class="flex gap-4 items-center">
-                            <input type="number" id="size-input" value="500" class="w-24 px-3 py-2 bg-slate-900 border border-slate-700 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-500">
-                            <div class="flex bg-slate-700 rounded-lg p-1 border border-slate-600">
-                                <button class="unit-btn px-3 py-1 text-xs font-medium rounded-md bg-slate-500 shadow-sm text-white transition-all" data-unit="KB">KB</button>
-                                <button class="unit-btn px-3 py-1 text-xs font-medium rounded-md text-slate-400 hover:text-white transition-all" data-unit="MB">MB</button>
+                            <input type="number" id="size-input" value="500" class="flex-1 liquid-input text-white rounded-xl px-4 py-3 text-sm placeholder-white/20">
+                            
+                            <div class="flex bg-black/20 rounded-xl p-1 border border-white/10">
+                                <button class="unit-btn px-4 py-2 text-xs font-semibold rounded-lg bg-white/10 text-white shadow-sm transition-all" data-unit="KB">KB</button>
+                                <button class="unit-btn px-4 py-2 text-xs font-semibold rounded-lg text-white/40 hover:text-white transition-all" data-unit="MB">MB</button>
                             </div>
                         </div>
-                        <p class="text-xs text-slate-500 mt-2">The app will attempt to reduce quality and dimensions.</p>
+                        
+                        <!-- Slider for visual feedback (optional visual flair) -->
+                        <div class="mt-6">
+                            <div class="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-blue-400 to-purple-500 w-1/2 opacity-50"></div>
+                            </div>
+                            <p class="text-[10px] text-white/30 mt-2 text-center uppercase tracking-widest">Quality Optimization</p>
+                        </div>
                     </div>
 
-                    <button id="compress-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-blue-900/50 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <button id="compress-btn" class="w-full liquid-btn liquid-primary text-white font-semibold py-4 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-3">
                         <span>Compress File</span>
-                        <i class="fa-solid fa-arrow-right text-sm"></i>
+                        <i class="fa-solid fa-bolt text-sm"></i>
                     </button>
                     
                     <div id="progress-container" class="hidden mt-4">
-                        <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+                        <div class="flex items-center justify-between text-xs text-white/60 mb-2">
                             <span id="progress-text">Processing...</span>
                             <span id="progress-percent">0%</span>
                         </div>
-                        <div class="w-full bg-slate-700 rounded-full h-2">
-                            <div id="progress-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        <div class="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                            <div id="progress-bar" class="bg-white h-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(255,255,255,0.5)]" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Success Step -->
-            <div id="success-step" class="hidden text-center pt-4">
-                <div class="w-16 h-16 bg-green-900/30 border border-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-                    <i class="fa-solid fa-check text-2xl"></i>
+            <div id="success-step" class="hidden text-center pt-2">
+                <div class="w-20 h-20 bg-gradient-to-tr from-green-400/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-400/30 animate-float backdrop-blur-md">
+                    <i class="fa-solid fa-check text-3xl text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.5)]"></i>
                 </div>
-                <h3 class="text-xl font-bold text-white">Ready to download!</h3>
-                <p class="text-slate-400 text-sm mt-2 mb-6">Your file has been optimized successfully.</p>
+                <h3 class="text-2xl font-bold text-white mb-2">Done.</h3>
+                <p class="text-white/50 text-sm mb-8">Your file has been optimized.</p>
                 
-                <div class="flex justify-center gap-8 mb-8 text-sm">
-                    <div class="text-right">
-                        <p class="text-slate-500 text-xs uppercase tracking-wider">Before</p>
-                        <p id="final-original-size" class="font-semibold text-slate-300">2.4 MB</p>
+                <div class="flex justify-center gap-10 mb-8 text-sm bg-white/5 rounded-2xl p-4 border border-white/5 mx-4">
+                    <div class="text-center">
+                        <p class="text-white/30 text-[10px] uppercase tracking-wider mb-1">Original</p>
+                        <p id="final-original-size" class="font-medium text-white/70">2.4 MB</p>
                     </div>
-                    <div class="w-px bg-slate-600"></div>
-                    <div class="text-left">
-                        <p class="text-slate-500 text-xs uppercase tracking-wider">After</p>
-                        <p id="final-new-size" class="font-bold text-green-400">480 KB</p>
+                    <div class="w-px bg-white/10"></div>
+                    <div class="text-center">
+                        <p class="text-white/30 text-[10px] uppercase tracking-wider mb-1">New Size</p>
+                        <p id="final-new-size" class="font-bold text-green-400 text-lg">480 KB</p>
                     </div>
                 </div>
 
-                <a id="download-link" href="#" class="block w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-blue-900/50 transition-all duration-300 mb-3">
+                <a id="download-link" href="#" class="block w-full liquid-btn liquid-primary text-white font-semibold py-4 px-6 rounded-2xl mb-4 text-center">
                     Download File
                 </a>
-                <button id="reset-btn" class="text-slate-400 hover:text-white text-sm font-medium py-2 transition-colors">
-                    Resize another file
+                <button id="reset-btn" class="text-white/40 hover:text-white text-sm font-medium py-2 transition-colors">
+                    Resize another
                 </button>
             </div>
         </div>
@@ -254,39 +392,39 @@
         <div id="app-converter" class="hidden">
             <!-- Upload Step -->
             <div id="heic-upload-step">
-                <div id="heic-drop-zone" class="border-2 border-dashed border-slate-600 rounded-2xl p-10 text-center transition-all duration-300 cursor-pointer hover:border-purple-500 hover:bg-slate-800/50 group bg-slate-800/30">
+                <div id="heic-drop-zone" class="drop-zone rounded-3xl p-12 text-center cursor-pointer group">
                     <input type="file" id="heic-file-input" class="hidden" accept=".heic,.heif">
                     
                     <div class="pointer-events-none">
-                        <div class="mb-4 text-slate-500 group-hover:text-purple-400 transition-colors duration-300">
-                            <i class="fa-solid fa-image text-4xl animate-float"></i>
+                        <div class="mb-6 w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <i class="fa-solid fa-images text-2xl text-white/80"></i>
                         </div>
-                        <p class="font-medium text-slate-200">Convert HEIC to JPG</p>
-                        <p class="text-xs text-slate-400 mt-2">Click or drag HEIC file here</p>
+                        <p class="font-medium text-white/90 text-lg">Convert HEIC</p>
+                        <p class="text-xs text-white/40 mt-2">Click or drag HEIC/HEIF file</p>
                     </div>
                 </div>
             </div>
 
             <!-- Processing Step -->
-            <div id="heic-processing-step" class="hidden text-center py-8">
-                <div class="loader mx-auto mb-4" style="border-top-color: #a855f7;"></div>
+            <div id="heic-processing-step" class="hidden text-center py-12">
+                <div class="loader mx-auto mb-6"></div>
                 <h3 class="text-lg font-semibold text-white">Converting...</h3>
-                <p class="text-slate-400 text-sm mt-2">This may take a moment for large files.</p>
+                <p class="text-white/40 text-sm mt-2">Rendering high-resolution JPG</p>
             </div>
 
             <!-- Success Step -->
-            <div id="heic-success-step" class="hidden text-center pt-4">
-                <div class="w-16 h-16 bg-purple-900/30 border border-purple-500/20 text-purple-400 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-                    <i class="fa-solid fa-check text-2xl"></i>
+            <div id="heic-success-step" class="hidden text-center pt-2">
+                <div class="w-20 h-20 bg-gradient-to-tr from-purple-400/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-400/30 animate-float backdrop-blur-md">
+                    <i class="fa-solid fa-magic text-3xl text-purple-400 drop-shadow-[0_0_10px_rgba(192,132,252,0.5)]"></i>
                 </div>
-                <h3 class="text-xl font-bold text-white">Conversion Complete!</h3>
-                <p class="text-slate-400 text-sm mt-2 mb-6">Your photo is now a universal JPG.</p>
+                <h3 class="text-2xl font-bold text-white mb-2">Magic Complete!</h3>
+                <p class="text-white/50 text-sm mb-8">Ready to share anywhere.</p>
                 
-                <a id="heic-download-link" href="#" class="block w-full bg-purple-600 hover:bg-purple-500 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-purple-900/50 transition-all duration-300 mb-3">
+                <a id="heic-download-link" href="#" class="block w-full liquid-btn liquid-primary text-white font-semibold py-4 px-6 rounded-2xl mb-4 text-center">
                     Download JPG
                 </a>
-                <button id="heic-reset-btn" class="text-slate-400 hover:text-white text-sm font-medium py-2 transition-colors">
-                    Convert another file
+                <button id="heic-reset-btn" class="text-white/40 hover:text-white text-sm font-medium py-2 transition-colors">
+                    Convert another
                 </button>
             </div>
         </div>
@@ -308,18 +446,22 @@
                 appResizer.classList.remove('hidden');
                 appConverter.classList.add('hidden');
                 
+                // Style updates
                 tabResizer.classList.add('tab-active');
                 tabResizer.classList.remove('tab-inactive');
-                tabConverter.classList.add('tab-inactive');
+                tabResizer.classList.remove('text-white/50');
+                
                 tabConverter.classList.remove('tab-active');
+                tabConverter.classList.add('tab-inactive');
             } else {
                 appResizer.classList.add('hidden');
                 appConverter.classList.remove('hidden');
                 
                 tabConverter.classList.add('tab-active');
                 tabConverter.classList.remove('tab-inactive');
-                tabResizer.classList.add('tab-inactive');
+                
                 tabResizer.classList.remove('tab-active');
+                tabResizer.classList.add('tab-inactive');
             }
         }
 
@@ -410,9 +552,9 @@
             
             const icon = document.getElementById('file-icon');
             if (file.type === 'application/pdf') {
-                icon.className = 'fa-regular fa-file-pdf text-red-400';
+                icon.className = 'fa-regular fa-file-pdf';
             } else {
-                icon.className = 'fa-regular fa-file-image text-blue-400';
+                icon.className = 'fa-regular fa-file-image';
             }
 
             const currentKB = file.size / 1024;
@@ -449,11 +591,11 @@
         function updateUnitButtons() {
             unitBtns.forEach(btn => {
                 if (btn.dataset.unit === selectedUnit) {
-                    btn.classList.remove('bg-transparent', 'text-slate-400');
-                    btn.classList.add('bg-slate-500', 'shadow-sm', 'text-white');
+                    btn.classList.remove('text-white/40');
+                    btn.classList.add('bg-white/10', 'text-white', 'shadow-sm');
                 } else {
-                    btn.classList.add('bg-transparent', 'text-slate-400');
-                    btn.classList.remove('bg-slate-500', 'shadow-sm', 'text-white');
+                    btn.classList.add('text-white/40');
+                    btn.classList.remove('bg-white/10', 'text-white', 'shadow-sm');
                 }
             });
         }
@@ -461,7 +603,6 @@
         sizeInput.addEventListener('input', updateTargetDisplay);
 
         document.getElementById('reset-btn').addEventListener('click', () => {
-            // Only reset Resizer part
             currentFile = null;
             fileInput.value = '';
             uploadStep.classList.remove('hidden');
@@ -476,7 +617,7 @@
             const targetBytes = getTargetBytes();
             
             compressBtn.disabled = true;
-            compressBtn.innerHTML = '<div class="loader mr-2"></div> Compressing...';
+            compressBtn.innerHTML = '<div class="loader mr-2"></div> Processing...';
             progressContainer.classList.remove('hidden');
 
             try {
@@ -496,7 +637,7 @@
 
         function resetCompressBtn() {
             compressBtn.disabled = false;
-            compressBtn.innerHTML = '<span>Compress File</span><i class="fa-solid fa-arrow-right text-sm"></i>';
+            compressBtn.innerHTML = '<span>Compress File</span><i class="fa-solid fa-bolt text-sm"></i>';
             progressContainer.classList.add('hidden');
         }
 
@@ -655,31 +796,26 @@
         async function handleHeicFile(file) {
             if (!file) return;
             
-            // Basic extension check
             const ext = file.name.split('.').pop().toLowerCase();
             if (ext !== 'heic' && ext !== 'heif') {
                 alert('Please upload an .heic or .heif file.');
                 return;
             }
 
-            // Switch UI
             heicUploadStep.classList.add('hidden');
             heicProcessingStep.classList.remove('hidden');
 
             try {
-                // Convert using heic2any
                 const resultBlob = await heic2any({
                     blob: file,
                     toType: "image/jpeg",
                     quality: 0.8
                 });
 
-                // Prepare download
                 const url = URL.createObjectURL(resultBlob);
                 heicDownloadLink.href = url;
                 heicDownloadLink.download = file.name.replace(/\.(heic|heif)$/i, '.jpg');
 
-                // Show success
                 heicProcessingStep.classList.add('hidden');
                 heicSuccessStep.classList.remove('hidden');
 
