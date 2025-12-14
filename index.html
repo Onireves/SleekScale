@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SleekScale - Dark Mode</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            /* Dark Mode Gradient */
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #111827);
+            background-size: 400% 400%;
+            animation: gradient-x 15s ease infinite;
+            height: 100vh;
+            overflow-y: auto;
+            color: #f8fafc;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.75); /* Slate 800 with opacity */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle white border */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .drag-active {
+            border-color: #60a5fa !important; /* Blue 400 */
+            background-color: rgba(59, 130, 246, 0.1) !important;
+            transform: scale(1.02);
+        }
+
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #60a5fa;
+            cursor: pointer;
+            margin-top: -8px; 
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #334155; /* Slate 700 */
+            border-radius: 2px;
+        }
+
+        .loader {
+            border: 3px solid #334155;
+            border-radius: 50%;
+            border-top: 3px solid #60a5fa;
+            width: 24px;
+            height: 24px;
+            -webkit-animation: spin 1s linear infinite; /* Safari */
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 min-h-screen">
+
+    <div class="glass-panel w-full max-w-xl rounded-3xl p-8 transition-all duration-300 relative overflow-hidden">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-900/30 text-blue-400 mb-4 shadow-sm border border-blue-500/10">
+                <i class="fa-solid fa-compress text-xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">SleekScale</h1>
+            <p class="text-slate-400 mt-2 text-sm">Resize images & PDFs to a specific file size.</p>
+        </div>
+
+        <!-- Main Content -->
+        <div id="upload-step">
+            <!-- Drop Zone -->
+            <div id="drop-zone" class="border-2 border-dashed border-slate-600 rounded-2xl p-10 text-center transition-all duration-300 cursor-pointer hover:border-blue-500 hover:bg-slate-800/50 group bg-slate-800/30">
+                <input type="file" id="file-input" class="hidden" accept=".png,.jpg,.jpeg,.pdf">
+                
+                <div class="pointer-events-none">
+                    <div class="mb-4 text-slate-500 group-hover:text-blue-400 transition-colors duration-300">
+                        <i class="fa-solid fa-cloud-arrow-up text-5xl animate-float"></i>
+                    </div>
+                    <p class="font-medium text-slate-200">Click or Drag & Drop</p>
+                    <p class="text-xs text-slate-400 mt-2">JPG, PNG, or PDF up to 20MB</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Step (Hidden by default) -->
+        <div id="processing-step" class="hidden">
+            <!-- File Info -->
+            <div class="flex items-center p-4 bg-slate-800/50 rounded-xl mb-6 border border-slate-700">
+                <div class="w-10 h-10 rounded-lg bg-slate-700 shadow-sm flex items-center justify-center text-slate-300 mr-4">
+                    <i id="file-icon" class="fa-regular fa-file-image"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p id="filename-display" class="font-medium text-sm truncate text-slate-200">image.jpg</p>
+                    <p id="original-size-display" class="text-xs text-slate-400">2.4 MB</p>
+                </div>
+                <button id="remove-file-btn" class="text-slate-500 hover:text-red-400 transition-colors p-2">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Controls -->
+            <div class="space-y-6">
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm font-semibold text-slate-300">Target File Size</label>
+                        <span id="target-size-display" class="text-sm font-bold text-blue-400 bg-blue-900/30 border border-blue-500/20 px-2 py-1 rounded">500 KB</span>
+                    </div>
+                    
+                    <!-- Size Input Group -->
+                    <div class="flex gap-4 items-center">
+                        <input type="number" id="size-input" value="500" class="w-24 px-3 py-2 bg-slate-900 border border-slate-700 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder-slate-500">
+                        <div class="flex bg-slate-700 rounded-lg p-1 border border-slate-600">
+                            <button class="unit-btn px-3 py-1 text-xs font-medium rounded-md bg-slate-500 shadow-sm text-white transition-all" data-unit="KB">KB</button>
+                            <button class="unit-btn px-3 py-1 text-xs font-medium rounded-md text-slate-400 hover:text-white transition-all" data-unit="MB">MB</button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">The app will attempt to reduce quality and dimensions to meet this target.</p>
+                </div>
+
+                <!-- Action Button -->
+                <button id="compress-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-blue-900/50 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                    <span>Compress File</span>
+                    <i class="fa-solid fa-arrow-right text-sm"></i>
+                </button>
+                
+                <!-- Progress Indicator -->
+                <div id="progress-container" class="hidden mt-4">
+                    <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+                        <span id="progress-text">Processing...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-2">
+                        <div id="progress-bar" class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Step (Hidden by default) -->
+        <div id="success-step" class="hidden text-center pt-4">
+            <div class="w-16 h-16 bg-green-900/30 border border-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                <i class="fa-solid fa-check text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">Ready to download!</h3>
+            <p class="text-slate-400 text-sm mt-2 mb-6">Your file has been optimized successfully.</p>
+            
+            <div class="flex justify-center gap-8 mb-8 text-sm">
+                <div class="text-right">
+                    <p class="text-slate-500 text-xs uppercase tracking-wider">Before</p>
+                    <p id="final-original-size" class="font-semibold text-slate-300">2.4 MB</p>
+                </div>
+                <div class="w-px bg-slate-600"></div>
+                <div class="text-left">
+                    <p class="text-slate-500 text-xs uppercase tracking-wider">After</p>
+                    <p id="final-new-size" class="font-bold text-green-400">480 KB</p>
+                </div>
+            </div>
+
+            <a id="download-link" href="#" class="block w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl shadow-lg shadow-blue-900/50 transition-all duration-300 mb-3">
+                Download File
+            </a>
+            <button id="reset-btn" class="text-slate-400 hover:text-white text-sm font-medium py-2 transition-colors">
+                Resize another file
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Setup PDF Worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        // Constants
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const processingStep = document.getElementById('processing-step');
+        const uploadStep = document.getElementById('upload-step');
+        const successStep = document.getElementById('success-step');
+        const filenameDisplay = document.getElementById('filename-display');
+        const originalSizeDisplay = document.getElementById('original-size-display');
+        const removeFileBtn = document.getElementById('remove-file-btn');
+        const compressBtn = document.getElementById('compress-btn');
+        const sizeInput = document.getElementById('size-input');
+        const unitBtns = document.querySelectorAll('.unit-btn');
+        const targetSizeDisplay = document.getElementById('target-size-display');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const progressPercent = document.getElementById('progress-percent');
+        
+        let currentFile = null;
+        let selectedUnit = 'KB';
+        
+        // --- Utilities ---
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        function updateTargetDisplay() {
+            targetSizeDisplay.textContent = `${sizeInput.value} ${selectedUnit}`;
+        }
+
+        function getTargetBytes() {
+            const val = parseFloat(sizeInput.value);
+            return selectedUnit === 'MB' ? val * 1024 * 1024 : val * 1024;
+        }
+
+        // --- Drag & Drop ---
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-active'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-active'), false);
+        });
+
+        dropZone.addEventListener('drop', handleDrop, false);
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFile(files[0]);
+        }
+
+        function handleFile(file) {
+            if (!file) return;
+            
+            // Validate type
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload a JPG, PNG, or PDF file.');
+                return;
+            }
+
+            currentFile = file;
+            filenameDisplay.textContent = file.name;
+            originalSizeDisplay.textContent = formatBytes(file.size);
+            
+            // Icon
+            const icon = document.getElementById('file-icon');
+            if (file.type === 'application/pdf') {
+                icon.className = 'fa-regular fa-file-pdf text-red-400';
+            } else {
+                icon.className = 'fa-regular fa-file-image text-blue-400';
+            }
+
+            // Suggest a target size (50% of original)
+            const currentKB = file.size / 1024;
+            if (currentKB > 1024) {
+                selectedUnit = 'MB';
+                sizeInput.value = (file.size / (1024 * 1024) * 0.5).toFixed(1);
+            } else {
+                selectedUnit = 'KB';
+                sizeInput.value = Math.floor(currentKB * 0.5);
+            }
+            updateUnitButtons();
+            updateTargetDisplay();
+
+            // Switch UI
+            uploadStep.classList.add('hidden');
+            processingStep.classList.remove('hidden');
+            successStep.classList.add('hidden');
+        }
+
+        // --- UI Interactions ---
+        removeFileBtn.addEventListener('click', () => {
+            currentFile = null;
+            fileInput.value = '';
+            uploadStep.classList.remove('hidden');
+            processingStep.classList.add('hidden');
+        });
+
+        unitBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectedUnit = btn.dataset.unit;
+                updateUnitButtons();
+                updateTargetDisplay();
+            });
+        });
+
+        function updateUnitButtons() {
+            unitBtns.forEach(btn => {
+                if (btn.dataset.unit === selectedUnit) {
+                    btn.classList.remove('bg-transparent', 'text-slate-400');
+                    btn.classList.add('bg-slate-500', 'shadow-sm', 'text-white');
+                } else {
+                    btn.classList.add('bg-transparent', 'text-slate-400');
+                    btn.classList.remove('bg-slate-500', 'shadow-sm', 'text-white');
+                }
+            });
+        }
+
+        sizeInput.addEventListener('input', updateTargetDisplay);
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            location.reload(); // Simple reset
+        });
+
+        // --- Core Compression Logic ---
+
+        compressBtn.addEventListener('click', async () => {
+            if (!currentFile) return;
+
+            const targetBytes = getTargetBytes();
+            
+            // UI Loading State
+            compressBtn.disabled = true;
+            compressBtn.innerHTML = '<div class="loader mr-2"></div> Compressing...';
+            progressContainer.classList.remove('hidden');
+
+            try {
+                let resultBlob;
+                
+                if (currentFile.type === 'application/pdf') {
+                    resultBlob = await compressPDF(currentFile, targetBytes);
+                } else {
+                    resultBlob = await compressImage(currentFile, targetBytes);
+                }
+
+                showSuccess(resultBlob);
+
+            } catch (error) {
+                console.error(error);
+                alert('Error processing file: ' + error.message);
+                resetCompressBtn();
+            }
+        });
+
+        function resetCompressBtn() {
+            compressBtn.disabled = false;
+            compressBtn.innerHTML = '<span>Compress File</span><i class="fa-solid fa-arrow-right text-sm"></i>';
+            progressContainer.classList.add('hidden');
+        }
+
+        function updateProgress(percent, text) {
+            progressBar.style.width = `${percent}%`;
+            progressPercent.textContent = `${Math.round(percent)}%`;
+            if(text) progressText.textContent = text;
+        }
+
+        // Image Compression Algorithm
+        async function compressImage(file, targetBytes) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                
+                img.onload = async () => {
+                    URL.revokeObjectURL(url);
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    let quality = 0.9;
+                    let iteration = 0;
+                    const maxIterations = 20;
+
+                    // Initial draw
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const attemptCompression = async () => {
+                        updateProgress((iteration / maxIterations) * 100, "Optimizing quality...");
+                        
+                        // To get Blob size, we must await the blob creation
+                        const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', quality));
+                        
+                        if (blob.size <= targetBytes || iteration >= maxIterations) {
+                            // If we hit the limit or target
+                            updateProgress(100, "Done!");
+                            resolve(blob);
+                            return;
+                        }
+
+                        // Adjust parameters for next loop
+                        iteration++;
+                        
+                        // Strategy: 
+                        // 1. Lower Quality first
+                        // 2. If Quality is already low, Scale Down dimensions
+                        
+                        if (quality > 0.1) {
+                            quality -= 0.1;
+                        } else {
+                            // Quality is maxed out, start resizing dimensions
+                            width *= 0.8; // Reduce by 20%
+                            height *= 0.8;
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx.drawImage(img, 0, 0, width, height);
+                            // Reset quality slightly so we don't look terrible at small size
+                            quality = 0.5; 
+                        }
+                        
+                        attemptCompression();
+                    };
+
+                    attemptCompression();
+                };
+                
+                img.onerror = reject;
+                img.src = url;
+            });
+        }
+
+        // PDF Compression Algorithm
+        // Note: This rasterizes the PDF (turns pages to images)
+        async function compressPDF(file, targetBytes) {
+            updateProgress(0, "Reading PDF...");
+            
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            const totalPages = pdf.numPages;
+            
+            // Create new PDF
+            const doc = new jspdf.jsPDF();
+            
+            // Calculate approximate budget per page (rough estimate)
+            // We subtract some overhead for PDF structure
+            const bytesPerPage = (targetBytes * 0.9) / totalPages;
+
+            for (let i = 1; i <= totalPages; i++) {
+                updateProgress(((i-1) / totalPages) * 100, `Processing page ${i} of ${totalPages}...`);
+                
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 1.5 }); // Start with decent quality
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+                // Compress this page image
+                // We use a simplified version of the image compressor here
+                // We aim for JPEG quality that fits the budget
+                
+                let quality = 0.8;
+                let pageDataUrl = canvas.toDataURL('image/jpeg', quality);
+                
+                // Very simple iterative reduction for the page
+                // Note: toDataURL header adds size, roughly base64 is ~1.33x binary
+                while (pageDataUrl.length * 0.75 > bytesPerPage && quality > 0.1) {
+                    quality -= 0.1;
+                    pageDataUrl = canvas.toDataURL('image/jpeg', quality);
+                }
+
+                // Add to PDF
+                const imgProps = doc.getImageProperties(pageDataUrl);
+                const pdfWidth = doc.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                
+                if (i > 1) doc.addPage();
+                doc.addImage(pageDataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            }
+
+            updateProgress(100, "Finalizing PDF...");
+            return doc.output('blob');
+        }
+
+        function showSuccess(blob) {
+            processingStep.classList.add('hidden');
+            successStep.classList.remove('hidden');
+
+            const finalSize = blob.size;
+            document.getElementById('final-original-size').textContent = formatBytes(currentFile.size);
+            document.getElementById('final-new-size').textContent = formatBytes(finalSize);
+            
+            const url = URL.createObjectURL(blob);
+            const link = document.getElementById('download-link');
+            
+            // Keep extension or switch to jpg if it was an image
+            let ext = currentFile.name.split('.').pop();
+            if (currentFile.type !== 'application/pdf') ext = 'jpg'; // We convert all images to jpg
+            
+            link.href = url;
+            link.download = `resized_${currentFile.name.split('.')[0]}.${ext}`;
+            
+            // Visual feedback if we missed the target significantly (optional)
+            const targetBytes = getTargetBytes();
+            if (finalSize > targetBytes) {
+                document.getElementById('final-new-size').classList.remove('text-green-400');
+                document.getElementById('final-new-size').classList.add('text-yellow-400');
+            }
+        }
+
+    </script>
+</body>
+</html>
